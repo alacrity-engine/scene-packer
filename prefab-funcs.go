@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/alacrity-engine/core/definitions"
 	codec "github.com/alacrity-engine/resource-codec"
 	bolt "go.etcd.io/bbolt"
 )
@@ -15,12 +14,12 @@ const (
 
 func createGameObjects(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(prefabs []*definitions.Prefab) {
-	return func(prefabs []*definitions.Prefab) {
+) func(prefabs []*PrefabMeta) {
+	return func(prefabs []*PrefabMeta) {
 		datas := make([][]byte, 0, len(prefabs))
 
 		for _, prefab := range prefabs {
-			prefabData := PrefabDefinitionToData(prefab)
+			prefabData := PrefabMetaToData(prefab)
 			data, err := prefabData.ToBytes()
 			handleError(err)
 
@@ -52,12 +51,12 @@ func createGameObjects(
 
 func storePrefabs(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(prefabs []*definitions.Prefab) {
-	return func(prefabs []*definitions.Prefab) {
+) func(prefabs []*PrefabMeta) {
+	return func(prefabs []*PrefabMeta) {
 		datas := make([][]byte, 0, len(prefabs))
 
 		for _, prefab := range prefabs {
-			prefabData := PrefabDefinitionToData(prefab)
+			prefabData := PrefabMetaToData(prefab)
 			data, err := prefabData.ToBytes()
 			handleError(err)
 

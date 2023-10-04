@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/alacrity-engine/core/math/geometry"
-	"github.com/alacrity-engine/core/render"
 	lua "github.com/yuin/gopher-lua"
 	bolt "go.etcd.io/bbolt"
 	luar "layeh.com/gopher-luar"
@@ -65,9 +64,9 @@ func main() {
 
 	// Import Go functions.
 	state.SetGlobal("vec", luar.New(state, geometry.V))
-	state.SetGlobal("ortho2DStandard",
-		luar.New(state, render.Ortho2DStandard))
 	state.SetGlobal("list", luar.New(state, list))
+	state.SetGlobal("colorMask", luar.New(state, colorMask))
+	state.SetGlobal("colorRepeat4", luar.New(state, colorRepeat4))
 
 	// Resource preload functions.
 	state.SetGlobal("preloadAnimations", luar.New(state,

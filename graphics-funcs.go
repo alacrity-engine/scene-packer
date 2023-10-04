@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/alacrity-engine/core/definitions"
 	codec "github.com/alacrity-engine/resource-codec"
 	bolt "go.etcd.io/bbolt"
 )
@@ -17,17 +16,33 @@ func list(data []interface{}) []interface{} {
 	return data
 }
 
+func colorMask(data [16]float32) []float32 {
+	return data[:]
+}
+
+func colorRepeat4(data [4]float32) []float32 {
+	mask := make([]float32, 16)
+
+	for i := 0; i < 4; i++ {
+		mask[i] = data[i]
+		mask[i+4] = data[i]
+		mask[i+8] = data[i]
+		mask[i+12] = data[i]
+	}
+
+	return mask
+}
+
 func createCanvases(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(canvasDefinitions []definitions.CanvasDefinition) {
-	return func(canvasDefinitions []definitions.CanvasDefinition) {
-		datas := make([][]byte, len(canvasDefinitions))
+) func(canvasMetas []CanvasMeta) {
+	return func(canvasMetas []CanvasMeta) {
+		datas := make([][]byte, len(canvasMetas))
 
-		for _, canvasDefinition := range canvasDefinitions {
+		for _, canvasDefinition := range canvasMetas {
 			canvasData := &codec.CanvasData{
-				Name:       canvasDefinition.Name,
-				DrawZ:      canvasDefinition.DrawZ,
-				Projection: canvasDefinition.Projection,
+				Name:  canvasDefinition.Name,
+				DrawZ: canvasDefinition.DrawZ,
 			}
 
 			data, err := canvasData.ToBytes()
@@ -60,11 +75,11 @@ func createCanvases(
 
 func createBatches(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(batchDefinitions []definitions.BatchDefinition) {
-	return func(batchDefinitions []definitions.BatchDefinition) {
-		datas := make([][]byte, len(batchDefinitions))
+) func(batchMetas []BatchMeta) {
+	return func(batchMetas []BatchMeta) {
+		datas := make([][]byte, len(batchMetas))
 
-		for _, batchDefinition := range batchDefinitions {
+		for _, batchDefinition := range batchMetas {
 			batchData := codec.BatchData{
 				Name:      batchDefinition.Name,
 				CanvasID:  batchDefinition.CanvasID,

@@ -1,30 +1,29 @@
 package main
 
 import (
-	"github.com/alacrity-engine/core/definitions"
 	codec "github.com/alacrity-engine/resource-codec"
 )
 
-func PrefabDefinitionToData(prefabDef *definitions.Prefab) *codec.PrefabData {
+func PrefabMetaToData(prefabMeta *PrefabMeta) *codec.PrefabData {
 	return &codec.PrefabData{
-		Name:          prefabDef.Name,
-		TransformRoot: TransformDefinitionToData(prefabDef.TransformRoot),
+		Name:          prefabMeta.Name,
+		TransformRoot: TransformMetaToData(prefabMeta.TransformRoot),
 	}
 }
 
-func TransformDefinitionToData(trDef *definitions.TransformDefinition) *codec.TransformData {
+func TransformMetaToData(trMeta *TransformMeta) *codec.TransformData {
 	trData := &codec.TransformData{
-		Position: trDef.Position,
-		Angle:    trDef.Angle,
-		Scale:    trDef.Scale,
-		Gmob:     GameObjectDefinitionToData(trDef.Gmob),
+		Position: trMeta.Position,
+		Angle:    trMeta.Angle,
+		Scale:    trMeta.Scale,
+		Gmob:     GameObjectMetaToData(trMeta.Gmob),
 	}
 
 	if len(trData.Children) > 0 {
-		children := make([]*codec.TransformData, 0, len(trDef.Children))
+		children := make([]*codec.TransformData, 0, len(trMeta.Children))
 
-		for _, child := range trDef.Children {
-			childData := TransformDefinitionToData(child)
+		for _, child := range trMeta.Children {
+			childData := TransformMetaToData(child)
 			children = append(children, childData)
 		}
 
@@ -34,40 +33,40 @@ func TransformDefinitionToData(trDef *definitions.TransformDefinition) *codec.Tr
 	return trData
 }
 
-func GameObjectDefinitionToData(gmobDef *definitions.GameObjectDefinition) *codec.GameObjectData {
+func GameObjectMetaToData(gmobMeta *GameObjectMeta) *codec.GameObjectData {
 	gmobData := &codec.GameObjectData{
-		Name:       gmobDef.Name,
-		ZUpdate:    gmobDef.ZUpdate,
-		Sprite:     SpriteDefinitionToData(gmobDef.Sprite),
-		Components: make([]*codec.ComponentData, 0, len(gmobDef.Components)),
-		Draw:       gmobDef.Draw,
+		Name:       gmobMeta.Name,
+		ZUpdate:    gmobMeta.ZUpdate,
+		Sprite:     SpriteMetaToData(gmobMeta.Sprite),
+		Components: make([]*codec.ComponentData, 0, len(gmobMeta.Components)),
+		Draw:       gmobMeta.Draw,
 	}
 
-	for _, comp := range gmobDef.Components {
-		compData := ComponentDefinitionToData(comp)
+	for _, comp := range gmobMeta.Components {
+		compData := ComponentMetaToData(comp)
 		gmobData.Components = append(gmobData.Components, compData)
 	}
 
 	return gmobData
 }
 
-func ComponentDefinitionToData(compDef *definitions.ComponentDefinition) *codec.ComponentData {
-	fieldData := make(map[string]interface{}, len(compDef.Data))
+func ComponentMetaToData(compMeta *ComponentMeta) *codec.ComponentData {
+	fieldData := make(map[string]interface{}, len(compMeta.Data))
 
-	for fieldName, fieldValue := range compDef.Data {
+	for fieldName, fieldValue := range compMeta.Data {
 		switch fieldVal := fieldValue.(type) {
-		case definitions.GameObjectPointer:
+		case GameObjectPointerMeta:
 			fieldData[fieldName] = codec.GameObjectPointerData{
 				Name: fieldVal.Name,
 			}
 
-		case definitions.ComponentPointer:
+		case ComponentPointerMeta:
 			fieldData[fieldName] = codec.ComponentPointerData{
 				GmobName: fieldVal.GmobName,
 				CompType: fieldVal.CompType,
 			}
 
-		case definitions.ResourcePointer:
+		case ResourcePointerMeta:
 			fieldData[fieldName] = codec.ResourcePointerData{
 				ResourceType: fieldVal.ResourceType,
 				ResourceID:   fieldVal.ResourceID,
@@ -79,25 +78,22 @@ func ComponentDefinitionToData(compDef *definitions.ComponentDefinition) *codec.
 	}
 
 	return &codec.ComponentData{
-		TypeName: compDef.TypeName,
-		Active:   compDef.Active,
+		TypeName: compMeta.TypeName,
+		Active:   compMeta.Active,
 		Data:     fieldData,
 	}
 }
 
-func SpriteDefinitionToData(spriteDef *definitions.SpriteDefinition) *codec.SpriteData {
-	colorMask := spriteDef.ColorMask.Data()
-	colorMaskData := colorMask[:]
-
+func SpriteMetaToData(spriteMeta *SpriteMeta) *codec.SpriteData {
 	return &codec.SpriteData{
-		ColorMask:       colorMaskData,
-		TargetArea:      spriteDef.TargetArea,
-		VertexDrawMode:  uint32(spriteDef.VertexDrawMode),
-		TextureDrawMode: uint32(spriteDef.TextureDrawMode),
-		ColorDrawMode:   uint32(spriteDef.ColorDrawMode),
-		ShaderProgramID: spriteDef.ShaderProgramID,
-		TextureID:       spriteDef.TextureID,
-		CanvasID:        spriteDef.CanvasID,
-		BatchID:         spriteDef.BatchID,
+		ColorMask:       spriteMeta.ColorMask,
+		TargetArea:      spriteMeta.TargetArea,
+		VertexDrawMode:  uint32(spriteMeta.VertexDrawMode),
+		TextureDrawMode: uint32(spriteMeta.TextureDrawMode),
+		ColorDrawMode:   uint32(spriteMeta.ColorDrawMode),
+		ShaderProgramID: spriteMeta.ShaderProgramID,
+		TextureID:       spriteMeta.TextureID,
+		CanvasID:        spriteMeta.CanvasID,
+		BatchID:         spriteMeta.BatchID,
 	}
 }
