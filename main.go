@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/alacrity-engine/core/geometry"
+	"github.com/alacrity-engine/core/math/geometry"
 	"github.com/alacrity-engine/core/render"
 	lua "github.com/yuin/gopher-lua"
 	bolt "go.etcd.io/bbolt"
