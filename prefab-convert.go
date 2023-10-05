@@ -88,6 +88,7 @@ func SpriteMetaToData(spriteMeta *SpriteMeta) *codec.SpriteData {
 	return &codec.SpriteData{
 		ColorMask:       spriteMeta.ColorMask,
 		TargetArea:      spriteMeta.TargetArea,
+		ZDraw:           spriteMeta.ZDraw,
 		VertexDrawMode:  uint32(spriteMeta.VertexDrawMode),
 		TextureDrawMode: uint32(spriteMeta.TextureDrawMode),
 		ColorDrawMode:   uint32(spriteMeta.ColorDrawMode),

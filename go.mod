@@ -3,8 +3,8 @@ module github.com/alacrity-engine/scene-packer
 go 1.21.1
 
 require (
-	github.com/alacrity-engine/core v0.0.0-20231004090715-acdddd09abeb
-	github.com/alacrity-engine/resource-codec v0.0.0-20231004174157-422c7ff19156
+	github.com/alacrity-engine/core v0.0.0-20231004181445-a7def272acdb
+	github.com/alacrity-engine/resource-codec v0.0.0-20231005172620-0a37f15cc18d
 	github.com/yuin/gopher-lua v1.1.0
 	go.etcd.io/bbolt v1.3.7
 	layeh.com/gopher-luar v1.0.11
