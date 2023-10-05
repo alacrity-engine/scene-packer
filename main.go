@@ -62,8 +62,14 @@ func main() {
 	})
 	handleError(err)
 
+	// Create constants.
+	state.SetGlobal("DrawModeStatic", luar.New(state, 0x88E4))
+	state.SetGlobal("DrawModeDynamic", luar.New(state, 0x88E8))
+	state.SetGlobal("DrawModeStream", luar.New(state, 0x88E0))
+
 	// Import Go functions.
 	state.SetGlobal("vec", luar.New(state, geometry.V))
+	state.SetGlobal("rect", luar.New(state, geometry.R))
 	state.SetGlobal("list", luar.New(state, list))
 	state.SetGlobal("colorMask", luar.New(state, colorMask))
 	state.SetGlobal("colorRepeat4", luar.New(state, colorRepeat4))
@@ -77,7 +83,7 @@ func main() {
 		preloadTextures(resourceFile, handleError)))
 	state.SetGlobal("preloadFonts", luar.New(state,
 		preloadFonts(resourceFile, handleError)))
-	state.SetGlobal("preloadSPictures", luar.New(state,
+	state.SetGlobal("preloadPictures", luar.New(state,
 		preloadPictures(resourceFile, handleError)))
 	state.SetGlobal("preloadShaders", luar.New(state,
 		preloadShaders(resourceFile, handleError)))

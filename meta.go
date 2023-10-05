@@ -26,6 +26,7 @@ type GameObjectMeta struct {
 }
 
 type ComponentMeta struct {
+	Path     string
 	TypeName string
 	Active   bool
 	Data     map[string]interface{}
@@ -34,6 +35,7 @@ type ComponentMeta struct {
 type SpriteMeta struct {
 	ColorMask       []float32
 	TargetArea      geometry.Rect
+	ZDraw           float32
 	VertexDrawMode  uint32
 	TextureDrawMode uint32
 	ColorDrawMode   uint32
