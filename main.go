@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"io"
 	"os"
@@ -18,6 +19,8 @@ const (
 var (
 	mainScriptFilePath string
 	resourceFilePath   string
+	//go:embed funcs.lua
+	luaFuncs string
 )
 
 func parseFlags() {
@@ -36,13 +39,7 @@ func main() {
 	defer state.Close()
 
 	// Import Lua functions.
-	file, err := os.Open("funcs.lua")
-	handleError(err)
-	data, err := io.ReadAll(file)
-	handleError(err)
-	err = file.Close()
-	handleError(err)
-	err = state.DoString(string(data))
+	err := state.DoString(luaFuncs)
 	handleError(err)
 
 	// Open the resource file.
@@ -103,9 +100,9 @@ func main() {
 		storePrefabs(resourceFile, handleError)))
 
 	// Execute the main script.
-	file, err = os.Open(mainScriptFilePath)
+	file, err := os.Open(mainScriptFilePath)
 	handleError(err)
-	data, err = io.ReadAll(file)
+	data, err := io.ReadAll(file)
 	handleError(err)
 	err = file.Close()
 	handleError(err)

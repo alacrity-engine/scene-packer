@@ -69,5 +69,5 @@ type BatchMeta struct {
 
 type CanvasMeta struct {
 	Name  string
-	DrawZ int
+	DrawZ int32
 }
