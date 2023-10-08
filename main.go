@@ -5,27 +5,31 @@ import (
 	"flag"
 	"io"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/alacrity-engine/core/math/geometry"
+	"github.com/golang-collections/collections/queue"
 	lua "github.com/yuin/gopher-lua"
 	bolt "go.etcd.io/bbolt"
 	luar "layeh.com/gopher-luar"
 )
 
 const (
-	sceneBucketName = "scene"
+	sceneBucketName   = "scene"
+	sceneBucketPrefix = "__scene"
 )
 
 var (
-	mainScriptFilePath string
-	resourceFilePath   string
+	projectPath      string
+	resourceFilePath string
 	//go:embed funcs.lua
 	luaFuncs string
 )
 
 func parseFlags() {
-	flag.StringVar(&mainScriptFilePath, "script", "./main.lua",
-		"Main Lua script to construct a scene")
+	flag.StringVar(&projectPath, "project", ".",
+		"Path to the project to pack animations for.")
 	flag.StringVar(&resourceFilePath, "out", "./stage.res",
 		"Resource file to store animations and spritesheets.")
 
@@ -99,15 +103,53 @@ func main() {
 	state.SetGlobal("storePrefabs", luar.New(state,
 		storePrefabs(resourceFile, handleError)))
 
-	// Execute the main script.
-	file, err := os.Open(mainScriptFilePath)
+	entries, err := os.ReadDir(projectPath)
 	handleError(err)
-	data, err := io.ReadAll(file)
-	handleError(err)
-	err = file.Close()
-	handleError(err)
-	err = state.DoString(string(data))
-	handleError(err)
+
+	traverseQueue := queue.New()
+
+	if len(entries) <= 0 {
+		return
+	}
+
+	for _, entry := range entries {
+		traverseQueue.Enqueue(FileTracker{
+			EntryPath: ".",
+			Entry:     entry,
+		})
+	}
+
+	for traverseQueue.Len() > 0 {
+		fsEntry := traverseQueue.Dequeue().(FileTracker)
+
+		if fsEntry.Entry.IsDir() {
+			entries, err = os.ReadDir(path.Join(fsEntry.EntryPath, fsEntry.Entry.Name()))
+			handleError(err)
+
+			for _, entry := range entries {
+				traverseQueue.Enqueue(FileTracker{
+					EntryPath: path.Join(fsEntry.EntryPath, fsEntry.Entry.Name()),
+					Entry:     entry,
+				})
+			}
+
+			continue
+		}
+
+		if !strings.HasSuffix(fsEntry.Entry.Name(), ".main.lua") {
+			continue
+		}
+
+		// Execute the main script.
+		file, err := os.Open(projectPath)
+		handleError(err)
+		data, err := io.ReadAll(file)
+		handleError(err)
+		err = file.Close()
+		handleError(err)
+		err = state.DoString(string(data))
+		handleError(err)
+	}
 }
 
 func handleError(err error) {

@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	canvasesKey = "canvases"
-	batchesKey  = "batches"
+	canvasesKey        = "canvases"
+	batchesKey         = "batches"
+	canvasesBucketName = "canvases"
 )
 
 // list makes Lua perceive the data
@@ -37,34 +38,36 @@ func createCanvases(
 	resourceFile *bolt.DB, handleError func(err error),
 ) func(canvasMetas []CanvasMeta) {
 	return func(canvasMetas []CanvasMeta) {
-		datas := make([][]byte, len(canvasMetas))
+		datas := make([]*codec.CanvasData, len(canvasMetas))
 
 		for _, canvasDefinition := range canvasMetas {
 			canvasData := &codec.CanvasData{
 				Name:  canvasDefinition.Name,
 				DrawZ: canvasDefinition.DrawZ,
 			}
-
-			data, err := canvasData.ToBytes()
-			handleError(err)
-			datas = append(datas, data)
+			datas = append(datas, canvasData)
 		}
 
-		data, err := codec.SerializeBlobs(datas)
-		handleError(err)
-
-		err = resourceFile.Update(func(tx *bolt.Tx) error {
+		err := resourceFile.Update(func(tx *bolt.Tx) error {
 			buck, err := tx.CreateBucketIfNotExists(
-				[]byte(sceneBucketName))
+				[]byte(canvasesBucketName))
 
 			if err != nil {
 				return err
 			}
 
-			err = buck.Put([]byte(canvasesKey), data)
+			for _, canvasData := range datas {
+				data, err := canvasData.ToBytes()
 
-			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+
+				err = buck.Put([]byte(canvasData.Name), data)
+
+				if err != nil {
+					return err
+				}
 			}
 
 			return nil
@@ -75,8 +78,8 @@ func createCanvases(
 
 func createBatches(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(batchMetas []BatchMeta) {
-	return func(batchMetas []BatchMeta) {
+) func(sceneID string, batchMetas []BatchMeta) {
+	return func(sceneID string, batchMetas []BatchMeta) {
 		datas := make([][]byte, len(batchMetas))
 
 		for _, batchDefinition := range batchMetas {
@@ -98,7 +101,7 @@ func createBatches(
 
 		err = resourceFile.Update(func(tx *bolt.Tx) error {
 			buck, err := tx.CreateBucketIfNotExists(
-				[]byte(sceneBucketName))
+				[]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err

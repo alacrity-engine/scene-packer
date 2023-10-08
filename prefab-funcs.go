@@ -8,14 +8,18 @@ import (
 )
 
 const (
-	gmobsKey   = "gmobs"
-	prefabsKey = "prefabs"
+	gmobsKey          = "gmobs"
+	prefabsBucketName = "prefabs"
 )
+
+// TODO: make createGameObjects method
+// callable many many times so users
+// could fill a scene partially.
 
 func createGameObjects(
 	resourceFile *bolt.DB, handleError func(err error),
-) func(prefabs []*PrefabMeta) {
-	return func(prefabs []*PrefabMeta) {
+) func(sceneID string, prefabs []*PrefabMeta) {
+	return func(sceneID string, prefabs []*PrefabMeta) {
 		datas := make([][]byte, 0, len(prefabs))
 
 		for _, prefab := range prefabs {
@@ -30,11 +34,11 @@ func createGameObjects(
 		handleError(err)
 
 		err = resourceFile.Update(func(tx *bolt.Tx) error {
-			buck := tx.Bucket([]byte(sceneBucketName))
+			buck := tx.Bucket([]byte(sceneBucketNameFromID(sceneID)))
 
 			if buck == nil {
 				return fmt.Errorf(
-					"bucket '%s' not found", sceneBucketName)
+					"bucket '%s' not found", sceneBucketNameFromID(sceneID))
 			}
 
 			err := buck.Put([]byte(gmobsKey), data)
@@ -53,31 +57,37 @@ func storePrefabs(
 	resourceFile *bolt.DB, handleError func(err error),
 ) func(prefabs []*PrefabMeta) {
 	return func(prefabs []*PrefabMeta) {
-		datas := make([][]byte, 0, len(prefabs))
+		datas := make([]*codec.PrefabData, 0, len(prefabs))
 
 		for _, prefab := range prefabs {
 			prefabData := PrefabMetaToData(prefab)
-			data, err := prefabData.ToBytes()
-			handleError(err)
-
-			datas = append(datas, data)
+			datas = append(datas, prefabData)
 		}
 
-		data, err := codec.SerializeBlobs(datas)
-		handleError(err)
-
-		err = resourceFile.Update(func(tx *bolt.Tx) error {
-			buck := tx.Bucket([]byte(sceneBucketName))
-
-			if buck == nil {
-				return fmt.Errorf(
-					"bucket '%s' not found", sceneBucketName)
-			}
-
-			err := buck.Put([]byte(prefabsKey), data)
+		err := resourceFile.Update(func(tx *bolt.Tx) error {
+			buck, err := tx.CreateBucketIfNotExists([]byte(prefabsBucketName))
 
 			if err != nil {
 				return err
+			}
+
+			if buck == nil {
+				return fmt.Errorf(
+					"bucket '%s' not found", prefabsBucketName)
+			}
+
+			for _, prefabData := range datas {
+				data, err := prefabData.ToBytes()
+
+				if err != nil {
+					return err
+				}
+
+				err = buck.Put([]byte(prefabData.Name), data)
+
+				if err != nil {
+					return err
+				}
 			}
 
 			return nil

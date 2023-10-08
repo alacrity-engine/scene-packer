@@ -15,10 +15,14 @@ const (
 	preloadShaderProgramsKey = "preload_shader_programs"
 )
 
-func preloadAnimations(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+// TODO: make all the functions callable
+// many times so users could load data
+// pertially.
+
+func preloadAnimations(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -42,10 +46,10 @@ func preloadAnimations(resourceFile *bolt.DB, handleError func(err error)) func(
 	}
 }
 
-func preloadAudios(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadAudios(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -69,10 +73,10 @@ func preloadAudios(resourceFile *bolt.DB, handleError func(err error)) func(name
 	}
 }
 
-func preloadTextures(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadTextures(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -96,10 +100,10 @@ func preloadTextures(resourceFile *bolt.DB, handleError func(err error)) func(na
 	}
 }
 
-func preloadFonts(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadFonts(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -123,10 +127,10 @@ func preloadFonts(resourceFile *bolt.DB, handleError func(err error)) func(names
 	}
 }
 
-func preloadPictures(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadPictures(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -150,10 +154,10 @@ func preloadPictures(resourceFile *bolt.DB, handleError func(err error)) func(na
 	}
 }
 
-func preloadShaders(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadShaders(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
@@ -177,10 +181,10 @@ func preloadShaders(resourceFile *bolt.DB, handleError func(err error)) func(nam
 	}
 }
 
-func preloadShaderPrograms(resourceFile *bolt.DB, handleError func(err error)) func(names []string) {
-	return func(names []string) {
+func preloadShaderPrograms(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
+	return func(sceneID string, names []string) {
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketName))
+			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
 
 			if err != nil {
 				return err
