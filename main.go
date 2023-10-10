@@ -3,9 +3,9 @@ package main
 import (
 	_ "embed"
 	"flag"
-	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/alacrity-engine/core/math/geometry"
@@ -33,6 +33,10 @@ func parseFlags() {
 		"Resource file to store animations and spritesheets.")
 
 	flag.Parse()
+
+	var err error
+	projectPath, err = filepath.Abs(projectPath)
+	handleError(err)
 }
 
 func main() {
@@ -101,7 +105,7 @@ func main() {
 
 	for _, entry := range entries {
 		traverseQueue.Enqueue(FileTracker{
-			EntryPath: ".",
+			EntryPath: projectPath,
 			Entry:     entry,
 		})
 	}
@@ -128,11 +132,10 @@ func main() {
 		}
 
 		// Execute the main script.
-		file, err := os.Open(projectPath)
+		data, err := os.ReadFile(path.Join(
+			fsEntry.EntryPath, fsEntry.Entry.Name()))
 		handleError(err)
-		data, err := io.ReadAll(file)
-		handleError(err)
-		err = file.Close()
+		err = os.Chdir(fsEntry.EntryPath)
 		handleError(err)
 		err = state.DoString(string(data))
 		handleError(err)

@@ -37,7 +37,7 @@ func createCanvases(
 	resourceFile *bolt.DB, handleError func(err error),
 ) func(canvasMetas []CanvasMeta) {
 	return func(canvasMetas []CanvasMeta) {
-		datas := make([]*codec.CanvasData, len(canvasMetas))
+		datas := make([]*codec.CanvasData, 0, len(canvasMetas))
 
 		for _, canvasDefinition := range canvasMetas {
 			canvasData := &codec.CanvasData{
@@ -79,7 +79,7 @@ func createBatches(
 	resourceFile *bolt.DB, handleError func(err error),
 ) func(sceneID string, batchMetas []BatchMeta) {
 	return func(sceneID string, batchMetas []BatchMeta) {
-		datas := make([][]byte, len(batchMetas))
+		datas := make([][]byte, 0, len(batchMetas))
 
 		for _, batchDefinition := range batchMetas {
 			batchData := codec.BatchData{
