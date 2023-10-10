@@ -6,197 +6,71 @@ import (
 )
 
 const (
-	preloadAnimationsKey     = "preload_animations"
-	preloadAudiosKey         = "preload_audios"
-	preloadTexturesKey       = "preload_textures"
-	preloadFontsKey          = "preload_fonts"
-	preloadPicturesKey       = "preload_pictures"
-	preloadShadersKey        = "preload_shaders"
-	preloadShaderProgramsKey = "preload_shader_programs"
+	animationsKey     = "animations"
+	audiosKey         = "audios"
+	texturesKey       = "textures"
+	fontsKey          = "fonts"
+	picturesKey       = "pictures"
+	shadersKey        = "shaders"
+	shaderProgramsKey = "shader_programs"
 )
 
-// TODO: make all the functions callable
-// many times so users could load data
-// pertially.
-
-func preloadAnimations(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadAnimationsKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
+func preloadItemKeyFromResourceType(resourceType string) string {
+	return "preload" + "." + resourceType
 }
 
-func preloadAudios(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
+func preload(
+	resourceFile *bolt.DB,
+	handleError func(err error),
+) func(sceneID, resourceType string, ids []string) {
+	return func(sceneID, resourceType string, ids []string) {
+		datas := make([][]byte, 0, len(ids))
+
+		for _, id := range ids {
+			datas = append(datas, []byte(id))
+		}
+
+		sceneBucketName := sceneBucketNameFromID(sceneID)
+		preloadItemKey := preloadItemKeyFromResourceType(resourceType)
 		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
+			buck, err := tx.CreateBucketIfNotExists(
+				[]byte(sceneBucketName))
 
 			if err != nil {
 				return err
 			}
 
-			data, err := codec.EncodeTag(names)
+			preloadLHData := buck.Get([]byte(preloadItemKey))
+			var lh *codec.ListHeader
+
+			if preloadLHData != nil {
+				lh, err = codec.ListHeaderFromBytes(preloadLHData)
+
+				if err != nil {
+					return err
+				}
+			} else {
+				lh = &codec.ListHeader{}
+			}
+
+			for i, data := range datas {
+				key := listItemFromID(sceneBucketName,
+					preloadItemKey, int(lh.Count)+i)
+				err = buck.Put([]byte(key), data)
+
+				if err != nil {
+					return err
+				}
+			}
+
+			lh.Count += int32(len(datas))
+			lhData, err := lh.ToBytes()
 
 			if err != nil {
 				return err
 			}
 
-			err = buck.Put([]byte(preloadAudiosKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
-}
-
-func preloadTextures(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadTexturesKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
-}
-
-func preloadFonts(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadFontsKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
-}
-
-func preloadPictures(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadPicturesKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
-}
-
-func preloadShaders(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadShadersKey), data)
-
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-		handleError(err)
-	}
-}
-
-func preloadShaderPrograms(resourceFile *bolt.DB, handleError func(err error)) func(sceneID string, names []string) {
-	return func(sceneID string, names []string) {
-		err := resourceFile.Update(func(tx *bolt.Tx) error {
-			buck, err := tx.CreateBucketIfNotExists([]byte(sceneBucketNameFromID(sceneID)))
-
-			if err != nil {
-				return err
-			}
-
-			data, err := codec.EncodeTag(names)
-
-			if err != nil {
-				return err
-			}
-
-			err = buck.Put([]byte(preloadShaderProgramsKey), data)
+			err = buck.Put([]byte(preloadItemKey), lhData)
 
 			if err != nil {
 				return err

@@ -12,10 +12,6 @@ const (
 	prefabsBucketName = "prefabs"
 )
 
-// TODO: make createGameObjects method
-// callable many many times so users
-// could fill a scene partially.
-
 func createGameObjects(
 	resourceFile *bolt.DB, handleError func(err error),
 ) func(sceneID string, prefabs []*PrefabMeta) {
@@ -30,18 +26,46 @@ func createGameObjects(
 			datas = append(datas, data)
 		}
 
-		data, err := codec.SerializeBlobs(datas)
-		handleError(err)
+		sceneBucketName := sceneBucketNameFromID(sceneID)
+		err := resourceFile.Update(func(tx *bolt.Tx) error {
+			buck, err := tx.CreateBucketIfNotExists(
+				[]byte(sceneBucketName))
 
-		err = resourceFile.Update(func(tx *bolt.Tx) error {
-			buck := tx.Bucket([]byte(sceneBucketNameFromID(sceneID)))
-
-			if buck == nil {
-				return fmt.Errorf(
-					"bucket '%s' not found", sceneBucketNameFromID(sceneID))
+			if err != nil {
+				return err
 			}
 
-			err := buck.Put([]byte(gmobsKey), data)
+			gmobsLHData := buck.Get([]byte(gmobsKey))
+			var lh *codec.ListHeader
+
+			if gmobsLHData != nil {
+				lh, err = codec.ListHeaderFromBytes(gmobsLHData)
+
+				if err != nil {
+					return err
+				}
+			} else {
+				lh = &codec.ListHeader{}
+			}
+
+			for i, data := range datas {
+				key := listItemFromID(sceneBucketName,
+					gmobsKey, int(lh.Count)+i)
+				err = buck.Put([]byte(key), data)
+
+				if err != nil {
+					return err
+				}
+			}
+
+			lh.Count += int32(len(datas))
+			lhData, err := lh.ToBytes()
+
+			if err != nil {
+				return err
+			}
+
+			err = buck.Put([]byte(gmobsKey), lhData)
 
 			if err != nil {
 				return err

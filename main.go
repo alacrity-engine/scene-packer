@@ -16,8 +16,7 @@ import (
 )
 
 const (
-	sceneBucketName   = "scene"
-	sceneBucketPrefix = "__scene"
+	sceneBucketName = "scene"
 )
 
 var (
@@ -76,20 +75,8 @@ func main() {
 	state.SetGlobal("colorRepeat4", luar.New(state, colorRepeat4))
 
 	// Resource preload functions.
-	state.SetGlobal("preloadAnimations", luar.New(state,
-		preloadAnimations(resourceFile, handleError)))
-	state.SetGlobal("preloadAudios", luar.New(state,
-		preloadAudios(resourceFile, handleError)))
-	state.SetGlobal("preloadTextures", luar.New(state,
-		preloadTextures(resourceFile, handleError)))
-	state.SetGlobal("preloadFonts", luar.New(state,
-		preloadFonts(resourceFile, handleError)))
-	state.SetGlobal("preloadPictures", luar.New(state,
-		preloadPictures(resourceFile, handleError)))
-	state.SetGlobal("preloadShaders", luar.New(state,
-		preloadShaders(resourceFile, handleError)))
-	state.SetGlobal("preloadShaderPrograms", luar.New(state,
-		preloadShaderPrograms(resourceFile, handleError)))
+	state.SetGlobal("preload", luar.New(state,
+		preload(resourceFile, handleError)))
 
 	// Graphics creation functions.
 	state.SetGlobal("createCanvases", luar.New(state,

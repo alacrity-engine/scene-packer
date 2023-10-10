@@ -6,7 +6,6 @@ import (
 )
 
 const (
-	canvasesKey        = "canvases"
 	batchesKey         = "batches"
 	canvasesBucketName = "canvases"
 )
@@ -96,18 +95,46 @@ func createBatches(
 			datas = append(datas, data)
 		}
 
-		data, err := codec.SerializeBlobs(datas)
-		handleError(err)
-
-		err = resourceFile.Update(func(tx *bolt.Tx) error {
+		sceneBucketName := sceneBucketNameFromID(sceneID)
+		err := resourceFile.Update(func(tx *bolt.Tx) error {
 			buck, err := tx.CreateBucketIfNotExists(
-				[]byte(sceneBucketNameFromID(sceneID)))
+				[]byte(sceneBucketName))
 
 			if err != nil {
 				return err
 			}
 
-			err = buck.Put([]byte(batchesKey), data)
+			batchesLHData := buck.Get([]byte(batchesKey))
+			var lh *codec.ListHeader
+
+			if batchesLHData != nil {
+				lh, err = codec.ListHeaderFromBytes(batchesLHData)
+
+				if err != nil {
+					return err
+				}
+			} else {
+				lh = &codec.ListHeader{}
+			}
+
+			for i, data := range datas {
+				key := listItemFromID(sceneBucketName,
+					batchesKey, int(lh.Count)+i)
+				err = buck.Put([]byte(key), data)
+
+				if err != nil {
+					return err
+				}
+			}
+
+			lh.Count += int32(len(datas))
+			lhData, err := lh.ToBytes()
+
+			if err != nil {
+				return err
+			}
+
+			err = buck.Put([]byte(batchesKey), lhData)
 
 			if err != nil {
 				return err
