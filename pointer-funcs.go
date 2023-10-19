@@ -19,3 +19,10 @@ func component(gmobName, compType string) ComponentPointerMeta {
 		CompType: compType,
 	}
 }
+
+func batch(canvasID, batchID string) BatchPointerMeta {
+	return BatchPointerMeta{
+		CanvasID: canvasID,
+		BatchID:  batchID,
+	}
+}

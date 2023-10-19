@@ -45,6 +45,11 @@ type SpriteMeta struct {
 	BatchID         string
 }
 
+type BatchPointerMeta struct {
+	CanvasID string
+	BatchID  string
+}
+
 type GameObjectPointerMeta struct {
 	Name string
 }

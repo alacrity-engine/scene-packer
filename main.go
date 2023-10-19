@@ -77,11 +77,13 @@ func main() {
 	state.SetGlobal("list", luar.New(state, list))
 	state.SetGlobal("colorMask", luar.New(state, colorMask))
 	state.SetGlobal("colorRepeat4", luar.New(state, colorRepeat4))
+	state.SetGlobal("atlasTexture", luar.New(state, atlasTexture))
 
 	// Pointer functions.
 	state.SetGlobal("gameObject", luar.New(state, gameObject))
 	state.SetGlobal("component", luar.New(state, component))
 	state.SetGlobal("resource", luar.New(state, resource))
+	state.SetGlobal("batch", luar.New(state, batch))
 
 	// Resource preload functions.
 	state.SetGlobal("preload", luar.New(state,

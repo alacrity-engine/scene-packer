@@ -72,6 +72,12 @@ func ComponentMetaToData(compMeta *ComponentMeta) *codec.ComponentData {
 				ResourceID:   fieldVal.ResourceID,
 			}
 
+		case BatchPointerMeta:
+			fieldData[fieldName] = codec.BatchPointerData{
+				CanvasID: fieldVal.CanvasID,
+				BatchID:  fieldVal.BatchID,
+			}
+
 		default:
 			fieldData[fieldName] = fieldValue
 		}
